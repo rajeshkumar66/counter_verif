@@ -1,0 +1,28 @@
+# config/test_config.yaml
+# Regression test list consumed by `make regress`.
+#
+# `&defaults` holds the common verbosity/timeout values; each test merges
+# them in via `<<: *defaults` and overrides only what's different for it.
+
+defaults: &defaults
+  verbosity: UVM_MEDIUM
+  timeout_ns: 10000
+
+tests:
+  - name: test1
+    seed: 1
+    <<: *defaults
+
+  - name: test2
+    seed: 42
+    <<: *defaults
+    verbosity: UVM_LOW        # override: run this test at lower verbosity
+
+  - name: test3
+    seed: 7
+    <<: *defaults
+    timeout_ns: 5000          # override: shorter timeout for this test
+
+  - name: test4
+    seed: 99
+    <<: *defaults

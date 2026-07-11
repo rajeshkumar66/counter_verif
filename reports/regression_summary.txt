@@ -1,0 +1,8 @@
+Regression Summary
+============================================================
+test1      result=PASS  errors=0   warnings=1   fatals=0  
+test2      result=PASS  errors=0   warnings=1   fatals=0  
+test3      result=PASS  errors=0   warnings=1   fatals=0  
+test4      result=PASS  errors=0   warnings=1   fatals=0  
+============================================================
+TOTAL: 4   PASSED: 4   FAILED: 0
