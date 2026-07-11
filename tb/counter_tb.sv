@@ -45,7 +45,7 @@ module counter_tb;
 	  end
 	  else begin
 	    $display("UVM_ERROR: Mismatch count=%d exp=%d time=%t", count, exp_count, $time);
-		error_count;
+		error_count++;
 	  end 
 	end 
 
