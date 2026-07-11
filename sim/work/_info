@@ -10,7 +10,7 @@ cModel Technology
 Z0 d/home/rajeshkumar/counter_verif/sim
 vcounter
 Z1 DXx6 sv_std 3 std 0 22 d=_JfHTnXCN[H5FjiaJJc0
-Z2 !s110 1783758755
+Z2 !s110 1783761343
 !i10b 1
 !s100 =lI:CP[hR[ImNR6jz]1i_3
 I0cOjf2E[e_5;jf]PO[lGF3
@@ -26,7 +26,7 @@ Z4 OL;L;10.7c;67
 r1
 !s85 0
 31
-Z5 !s108 1783758755.000000
+Z5 !s108 1783761343.000000
 Z6 !s107 ../tb/counter_tb.sv|../rtl/counter.sv|
 Z7 !s90 -work|work|../rtl/counter.sv|../tb/counter_tb.sv|-l|../logs/compile.log|
 !i113 0
@@ -34,7 +34,7 @@ Z8 o-work work -L mtiAvm -L mtiRnm -L mtiOvm -L mtiUvm -L mtiUPF -L infact
 Z9 tCvgOpt 0
 Tcounter_opt
 R2
-V?Lh2YUeVz82Q:6@Tkc^4=3
+V6j<CZ`bnG2Gc`KbIJhWc^2
 04 10 4 work counter_tb fast 0
 o-work work +acc
 R9

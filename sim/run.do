@@ -23,6 +23,9 @@ run -all
 # Zoom the wave window to show the full run
 wave zoom full
 
-# NOTE: no `quit` here on purpose - Questa's GUI stays open afterwards
-# so you can view the waveform. Close the window yourself when done,
-# or type `quit -f` at the Questa command prompt.
+# Only auto-quit when invoked from `make regress` (BATCH_MODE=1 is set by
+# the Makefile in that case). A plain interactive `make sim` leaves the
+# Questa GUI open so you can inspect the waveform.
+if {[info exists ::env(BATCH_MODE)] && $::env(BATCH_MODE) eq "1"} {
+    quit -f
+}
