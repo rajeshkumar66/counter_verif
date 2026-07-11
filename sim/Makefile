@@ -15,6 +15,7 @@ TB_DIR      := ../tb
 LOG_DIR     := ../logs
 REPORT_DIR  := ../reports
 CONFIG_DIR  := ../config
+SCRIPTS_DIR := ../scripts
 
 RTL_SRC     := $(RTL_DIR)/counter.sv
 TB_SRC      := $(TB_DIR)/counter_tb.sv
@@ -84,9 +85,11 @@ opt: compile
 #    Accepts TESTNAME, SEED, VERBOSITY and TIMEOUT_NS from the command
 #    line, and passes VERBOSITY/TIMEOUT_NS through as plusargs.
 #    By default Questa opens in GUI mode (no -c) and stays open after
-#    the run so the waveform is already there for you to inspect.
+#    the run so the waveform is already there for you to inspect; once
+#    you close Questa, the test's log is opened in gvim.
 #    When invoked with BATCH_MODE=1 (done internally by `regress`),
-#    it instead runs headless and quits automatically after each test.
+#    it instead runs headless, quits automatically, and does NOT open
+#    gvim per test (regress opens one combined summary at the end).
 # ---------------------------------------------------------------------------
 sim: opt
 	@mkdir -p $(LOG_DIR)
@@ -100,15 +103,20 @@ sim: opt
 		-wlf /tmp/vsim_$(TESTNAME)_$(SEED).wlf \
 		-do "do run.do"
 	@rm -f /tmp/vsim_$(TESTNAME)_$(SEED).wlf
+ifneq ($(BATCH_MODE),1)
+	@echo "==> [sim] Opening log in gvim: $(LOG_DIR)/sim_$(TESTNAME)_$(SEED).log"
+	gvim $(LOG_DIR)/sim_$(TESTNAME)_$(SEED).log &
+endif
 
 # ---------------------------------------------------------------------------
 # 5. regress - reads config/test_config.yaml and runs `sim` (headless,
-#    no waveform GUI) for every test listed there, then writes a
-#    pass/fail summary to reports/regression_summary.log
+#    no waveform GUI, no per-test gvim) for every test listed there.
+#    All pass/fail analysis is handled by scripts/log_analyser.py, which
+#    reads the resulting logs itself - no result-parsing logic lives in
+#    this Makefile. The final text summary is opened in gvim.
 # ---------------------------------------------------------------------------
 regress:
 	@mkdir -p $(REPORT_DIR)
-	@rm -f $(REPORT_DIR)/regression_summary.log
 	@python3 -c "\
 import yaml; \
 data = yaml.safe_load(open('$(TEST_CONFIG)')); \
@@ -116,23 +124,19 @@ data = yaml.safe_load(open('$(TEST_CONFIG)')); \
 	| while IFS=: read -r name seed verbosity timeout_ns; do \
 		echo "==> [regress] Running $$name (seed=$$seed, verbosity=$$verbosity, timeout_ns=$${timeout_ns}ns)"; \
 		$(MAKE) sim TESTNAME=$$name SEED=$$seed VERBOSITY=$$verbosity TIMEOUT_NS=$$timeout_ns BATCH_MODE=1; \
-		logfile=$(LOG_DIR)/sim_$${name}_$${seed}.log; \
-		if grep -q "RESULT : PASSED" $$logfile; then \
-			echo "$$name (seed=$$seed, verbosity=$$verbosity, timeout_ns=$${timeout_ns}ns) : PASSED" >> $(REPORT_DIR)/regression_summary.log; \
-		else \
-			echo "$$name (seed=$$seed, verbosity=$$verbosity, timeout_ns=$${timeout_ns}ns) : FAILED" >> $(REPORT_DIR)/regression_summary.log; \
-		fi; \
 	done
-	@echo "==> [regress] Summary:"
-	@cat $(REPORT_DIR)/regression_summary.log
+	@echo "==> [regress] Analysing logs"
+	python3 $(SCRIPTS_DIR)/log_analyser.py
+	@echo "==> [regress] Opening summary in gvim"
+	gvim $(REPORT_DIR)/regression_summary.txt &
 
 # ---------------------------------------------------------------------------
 # 6. clean - remove work library, logs and transcript/wlf files
 # ---------------------------------------------------------------------------
 clean:
-	@echo "==> [clean] Removing library, logs, transcripts"
+	@echo "==> [clean] Removing library, logs, transcripts, reports"
 	rm -rf $(LIB)
 	rm -f $(LOG_DIR)/*.log
-	rm -f $(REPORT_DIR)/*.log
+	rm -f $(REPORT_DIR)/*.log $(REPORT_DIR)/*.csv $(REPORT_DIR)/*.xlsx $(REPORT_DIR)/*.yaml $(REPORT_DIR)/*.txt
 	rm -f transcript *.wlf vsim.wlf
 	rm -rf modelsim.ini.bak
